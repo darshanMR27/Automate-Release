@@ -1,0 +1,9 @@
+server:
+  port: 8090
+spring:
+  profiles:
+    active: dev
+
+auth:
+  username: darshan.ramaiah
+  password: Durga@27#DEC#1984
