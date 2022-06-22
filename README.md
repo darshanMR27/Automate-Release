@@ -2,13 +2,14 @@
 
 ## Update your Jira Credentials in application yaml file
 
-auth.username=
-auth.password=
+:man: auth.username=
+
+:man: auth.password=
 
 ### Build applciation:
 
-mvn clean install
+:smile: mvn clean install
 
 ### Run Application:
 
-mvn spring-boot:run
+:smile: mvn spring-boot:run
