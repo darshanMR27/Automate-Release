@@ -9,11 +9,13 @@ import com.atlassian.jira.rest.client.auth.BasicHttpAuthenticationHandler;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
 import com.atlassian.util.concurrent.Promise;
 import com.bottomline.automate.release.Constants;
+import com.bottomline.automate.release.model.IssueInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,37 +42,53 @@ public class AutomateReleaseService {
      * @return
      * @throws Exception
      */
-    public List<String> automateRelease(String projectName, String fixVersion, String issueType,
+    public List<IssueInfo> automateRelease(String projectName, String fixVersion, String issueType,
                                         String status, String username, String secretKey) throws Exception {
 
         log.info("AutomateReleaseService: automateRelease: Entry");
-        int maxPerQuery = 100;
-        int startIndex = 0;
-        List<String> issueList = new ArrayList<>();
+        List<IssueInfo> issueList = new ArrayList<>();
+        List<IssueInfo> searchIssueList = new ArrayList<>();
+        String jqlString = null;
         try {
             URI jiraServerUri = URI.create(Constants.JIRA_BASE_URL);
             AsynchronousJiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
             AuthenticationHandler auth = new BasicHttpAuthenticationHandler(username, secretKey);
             restClient = factory.create(jiraServerUri, auth);
-            String jqlString = constructJql(projectName, fixVersion, issueType, status);
-            log.info("JQL String = " + jqlString);
-            SearchRestClient searchRestClient = restClient.getSearchClient();
-            while (true) {
-                Promise<SearchResult> searchResult = searchRestClient.searchJql(jqlString,
-                        maxPerQuery, startIndex, null);
-                SearchResult results = searchResult.claim();
-                log.debug("Search Results = " + results.getIssues());
 
-                if (null != results.getIssues()) {
-                    for (Issue issue : results.getIssues()) {
-                        issueList.add(issue.getKey());
+            String[] fixVersionArray = fixVersion.split(",");
+            for (int i=0; i < fixVersionArray.length; i++) {
+                int maxPerQuery = 100;
+                int startIndex = 0;
+                String splitFixVersion = fixVersionArray[i];
+                jqlString = constructJql(projectName, splitFixVersion, issueType, status);
+                log.debug("JQL String = " + jqlString);
+                SearchRestClient searchRestClient = restClient.getSearchClient();
+                List<String> list = new ArrayList<>();
+                IssueInfo issueInfo = new IssueInfo();
+                String withoutQuoteVersion = splitFixVersion.replaceAll(Constants.REGEX_WITHOUT_QUOTES, "");
+                while (true) {
+                    Promise<SearchResult> searchResult = searchRestClient.searchJql(jqlString,
+                            maxPerQuery, startIndex, null);
+                    SearchResult results = searchResult.claim();
+                    log.debug("Search Results = " + results.getIssues());
+
+                    if (null != results.getIssues()) {
+                        for (Issue issue : results.getIssues()) {
+                            issueInfo.setVersion(withoutQuoteVersion);
+                            list.add(issue.getKey());
+                            issueInfo.setTickets(list);
+                        }
                     }
+                    if (startIndex >= results.getTotal()) {
+                        break;
+                    }
+                    startIndex += maxPerQuery;
+                    log.debug("Fetching from Index: " + startIndex);
                 }
-                if (startIndex >= results.getTotal()) {
-                    break;
+                if (null != withoutQuoteVersion && issueInfo.getVersion() == null) {
+                    issueInfo.setVersion(withoutQuoteVersion);
                 }
-                startIndex += maxPerQuery;
-                log.debug("Fetching from Index: " + startIndex);
+                searchIssueList.add(issueInfo);
             }
         } catch (Exception ex) {
             String errorMessage = "Exception while automating the release checklist" + ex.getMessage();
@@ -81,7 +99,7 @@ public class AutomateReleaseService {
                 restClient.close();
         }
         log.info("AutomateReleaseService: automateRelease: Exit");
-        return issueList;
+        return searchIssueList;
     }
 
     /**

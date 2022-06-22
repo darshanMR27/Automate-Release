@@ -5,6 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class AutomateRelease {
-    private List<IssueInfo> cirNumberList;
+public class AutomatePowerRelease {
+
+    private List<String> cirNumberList;
 }

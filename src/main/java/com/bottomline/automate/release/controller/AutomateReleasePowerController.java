@@ -1,6 +1,7 @@
 package com.bottomline.automate.release.controller;
 
 import com.bottomline.automate.release.Constants;
+import com.bottomline.automate.release.model.AutomatePowerRelease;
 import com.bottomline.automate.release.model.AutomateRelease;
 import com.profesorfalken.jpowershell.PowerShell;
 import com.profesorfalken.jpowershell.PowerShellNotAvailableException;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 public class AutomateReleasePowerController {
 
     @PostMapping("/automate/release/power/execute")
-    public ResponseEntity<AutomateRelease> releasePowerAutomation(@RequestParam(Constants.PROJECT) String projectName,
+    public ResponseEntity<AutomatePowerRelease> releasePowerAutomation(@RequestParam(Constants.PROJECT) String projectName,
                                                                   @RequestParam(Constants.FIX_VERSION) String fixVersion,
                                                                   @RequestParam(Constants.ISSUE_TYPE) String issueType,
                                                                   @RequestParam(Constants.STATUS) String status) {
@@ -78,8 +79,8 @@ public class AutomateReleasePowerController {
      * @param psResponse
      * @return
      */
-    private AutomateRelease buildReponse(PowerShellResponse psResponse) {
-        AutomateRelease automateRelease = new AutomateRelease();
+    private AutomatePowerRelease buildReponse(PowerShellResponse psResponse) {
+        AutomatePowerRelease automateRelease = new AutomatePowerRelease();
         if (null != psResponse) {
             String[] cirNumberArray = psResponse.getCommandOutput().split(Constants.WHITE_SPACE);
             automateRelease.setCirNumberList(Arrays.stream(cirNumberArray).collect(Collectors.toList()));

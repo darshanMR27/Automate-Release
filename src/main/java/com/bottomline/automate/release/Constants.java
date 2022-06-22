@@ -12,5 +12,6 @@ public class Constants {
     public static final String POWER_SHELL_MAX_WAIT_CONFIG = "maxWait";
     public static final String POWER_SHELL_MAX_WAIT_VALUE = "20000";
     public static final String WHITE_SPACE = "\\s+";
+    public static final String REGEX_WITHOUT_QUOTES = "^\"|\"$";
     public static final String JIRA_BASE_URL = "https://jira.bottomline.tech";
 }

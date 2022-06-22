@@ -2,6 +2,7 @@ package com.bottomline.automate.release.controller;
 
 import com.bottomline.automate.release.Constants;
 import com.bottomline.automate.release.model.AutomateRelease;
+import com.bottomline.automate.release.model.IssueInfo;
 import com.bottomline.automate.release.service.AutomateReleaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,12 +52,19 @@ public class AutomateReleaseController {
         log.info("AutomateReleaseController: releaseAutomation: Entry");
         AutomateRelease response = new AutomateRelease();
         log.debug("Project = " + project + ", Fix Version = " + fixVersion + ", Issue Type = " + issueType + ", Status = " + status);
-        log.info("username = " + username + ", secretKey = " + secretKey);
         try {
-            List<String> cirIssueList = automateReleaseService
+            List<IssueInfo> cirIssueList = automateReleaseService
                     .automateRelease(project, fixVersion, issueType, status, username, secretKey);
             if (!CollectionUtils.isEmpty(cirIssueList)) {
-                response.setCirNumberList(cirIssueList);
+                if (cirIssueList.size() == 1) {
+                    if (cirIssueList.get(0).getTickets() == null) {
+                        return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
+                    } else {
+                        response.setCirNumberList(cirIssueList);
+                    }
+                } else {
+                    response.setCirNumberList(cirIssueList);
+                }
             } else {
                 return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
             }
