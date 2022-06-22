@@ -5,5 +5,5 @@ spring:
     active: dev
 
 auth:
-  username: darshan.ramaiah
-  password: Durga@27#DEC#1984
+  username: <Your Jira Username>
+  password: <Your Jira Password>
