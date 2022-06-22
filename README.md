@@ -1,14 +1,14 @@
-Automate Release Branching:
+# Automate Release Branching:
 
-Update your Jira Credentials in application yaml file
+## Update your Jira Credentials in application yaml file
 
 auth.username=
 auth.password=
 
-Build applciation:
+### Build applciation:
 
 mvn clean install
 
-Run Application:
+### Run Application:
 
 mvn spring-boot:run
